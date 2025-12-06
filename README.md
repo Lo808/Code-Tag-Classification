@@ -18,8 +18,13 @@ The prediction task is multi-label classification, as each exercise can belong t
 Project Structure
 
 Code-Tag-Classification/  
-  
+    main/
+        __init__.py 
+        data_loader.py   # data loader
+        preprocessing_py # preprocessing the data
+        baseline.py      #
     data/                    
         code_classification_dataset.zip # Compressed dataset (ZIP)
+
 
     README.md
