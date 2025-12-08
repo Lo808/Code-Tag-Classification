@@ -23,7 +23,7 @@ def load_json_data(file_path):
 
                     print(f"Failed reading {fname} from ZIP: {e}")
 
-    print(f"Loaded {len(data)} files from ZIP folder")
+    #print(f"Loaded {len(data)} files from ZIP folder")
 
     data_frame=pd.DataFrame(data)
     usefuls_column=['prob_desc_description','source_code','tags']

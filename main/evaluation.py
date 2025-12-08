@@ -1,8 +1,8 @@
-from sklearn.metrics import f1_score, precision_score, recall_score, classification_report
+from sklearn.metrics import f1_score
 import numpy as np
 
 
-def compute_f1_scores(y_true,y_pred_binary):
+def compute_f1_scores(y_true,y_pred_binary) -> dict:
     """
     Computes micro and macro F1 scores.
     Args:
@@ -17,7 +17,7 @@ def compute_f1_scores(y_true,y_pred_binary):
     return {"micro_f1": micro,"macro_f1":macro}
 
 
-def per_tag_f1(y_true,y_pred_binary,tag_names):
+def per_tag_f1(y_true,y_pred_binary,tag_names): 
     """
     Computes F1 score for each tag (useful for the 8 target tags).
     Args:
