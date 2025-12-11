@@ -21,11 +21,17 @@ Code-Tag-Classification/
     main/
         __init__.py 
         data_loader.py   # data loader
-        preprocessing_py # preprocessing the data
+        preprocessing_py # preprocessing the data for both model
         baseline.py      # inverse frequency model for baseline performances
         evaluation.py    # implement evaluation metrics
+        model            # 
+
+    
     data/                    
         code_classification_dataset.zip # Compressed dataset (ZIP)
+
+    models/
+        Stock model coeffs
 
 
     README.md

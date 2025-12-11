@@ -6,15 +6,17 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import MultiLabelBinarizer
 import unicodedata
 from torch.utils.data import DataLoader
+import numpy as np
 
 
 class Preprocessor():
     
-    def __init__(self,use_code=False) -> None:
+    def __init__(self,use_code=False,focus_only=False) -> None:
         self.use_code=use_code
         self.mlb=MultiLabelBinarizer()
         self.label_order=None
         self.focus_tags=['math','graphs','strings','number theory','trees','geometry','games','probabilities']
+        self.focus_only=focus_only
         pass
 
     def clean_text_description(self,text: str) -> str:
@@ -86,8 +88,7 @@ class Preprocessor():
         test_size=test_size,
         random_state=42,
         shuffle=True)
-
-
+        
         if devset==True:
             dev_text, test_text, dev_labels, test_labels = train_test_split(
                 test_text,
@@ -114,7 +115,12 @@ class Preprocessor():
     
     def binarize_labels(self,train_labels,test_labels,dev_labels=None):
 
-        self.mlb.fit(train_labels)
+        if self.focus_only:
+            # If want to only treat the focus tags
+            self.mlb=MultiLabelBinarizer(classes=self.focus_tags)
+            self.mlb.fit([self.focus_tags])
+        else:
+            self.mlb.fit(train_labels)
         self.label_order=list(self.mlb.classes_)
         train_labels_bin=self.mlb.transform(train_labels)
         test_labels_bin=self.mlb.transform(test_labels)
@@ -166,7 +172,7 @@ class Preprocessor():
         print("DEV SIZE:", len(dev_labels) if dev_labels else None)
         print("TEST SIZE:", len(test_labels) if test_labels else None)
 
-    
+ 
 class CodeforcesDataset(Dataset):
     '''
     Dataset subclass to process data to model
@@ -226,5 +232,12 @@ class BertPreprocessor():
         loader=DataLoader(dataset, batch_size=self.batch_size, shuffle=shuffle, num_workers=0)
         
         return loader
+    
+    def get_pos_weight(self,train_labels_bin):
+        num_pos = np.sum(train_labels_bin, axis=0)
+        num_neg = len(train_labels_bin) - num_pos
+        pos_weights = torch.tensor(num_neg / np.maximum(num_pos, 1), dtype=torch.float)
+        
+        return pos_weights
     
     
