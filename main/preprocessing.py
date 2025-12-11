@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset
 from sklearn.preprocessing import MultiLabelBinarizer
 import unicodedata
+from torch.utils.data import DataLoader
 
 
 class Preprocessor():
@@ -166,32 +167,6 @@ class Preprocessor():
         print("TEST SIZE:", len(test_labels) if test_labels else None)
 
     
-
-class Tensorizer:
-    '''
-    Tensorizing Class to encode text into tensorized data
-    '''
-    def __init__(self, tokenizer, max_len=512):
-        self.tokenizer = tokenizer
-        self.max_len = max_len
-
-    def convert_text_to_tensor(self, text):
-        encoding = self.tokenizer.encode_plus(
-            str(text),
-            add_special_tokens=True,
-            max_length=self.max_len,
-            padding='max_length',
-            truncation=True,
-            return_attention_mask=True,
-            return_tensors='pt',
-        )
-        
-        return {
-            'input_ids':encoding['input_ids'].flatten(),
-            'attention_mask':encoding['attention_mask'].flatten()
-        }
-    
-
 class CodeforcesDataset(Dataset):
     '''
     Dataset subclass to process data to model
@@ -218,4 +193,38 @@ class CodeforcesDataset(Dataset):
         tensors['labels'] = torch.tensor(label, dtype=torch.float)
         
         return tensors
+    
+
+class BertPreprocessor():
+
+    def __init__(self,tokenizer,max_len,batch_size,use_code=False) -> None:
+        self.preprocessor=Preprocessor(use_code=use_code)
+        self.tokenizer=tokenizer
+        self.max_len=max_len
+        self.batch_size=batch_size
+        
+
+    def convert_text_to_tensor(self, text):
+        '''
+        Method called by Dataset for every item, that tensorize a text item according to index from input tokenizer
+        '''
+        encoding = self.tokenizer.encode_plus(
+            str(text),
+            add_special_tokens=True,
+            max_length=self.max_len,
+            padding='max_length',
+            truncation=True,
+            return_attention_mask=True,
+            return_tensors='pt',
+        )
+        
+        return {'input_ids':encoding['input_ids'].flatten(),'attention_mask':encoding['attention_mask'].flatten()}
+
+    def preprocess_data(self,text,binarized_label,shuffle):
+
+        dataset=CodeforcesDataset(text,binarized_label,tensorizer=self)
+        loader=DataLoader(dataset, batch_size=self.batch_size, shuffle=shuffle, num_workers=0)
+        
+        return loader
+    
     
