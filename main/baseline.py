@@ -13,7 +13,7 @@ class tf_idf():
     Simple inverse frequency model as baseline, use vectorizer and Multilabel Binarizer
     A very important parameter is the threshold value for classifying
     '''
-    def __init__(self,max_features=100_000, ngrams=(1, 2),C=1.0):
+    def __init__(self,classes,max_features=100_000, ngrams=(1, 2),C=1.0):
         self.focus_tags=['math', 'graphs', 'strings', 'number theory', 'trees', 'geometry', 'games', 'probabilities']
         self.vectorizer=TfidfVectorizer(
         lowercase=False,        # we already lowercase manually
@@ -21,19 +21,18 @@ class tf_idf():
         max_features=max_features,
         strip_accents="unicode")
 
-        self.mlb=MultiLabelBinarizer()
-
         self.model=OneVsRestClassifier(LogisticRegression(max_iter=300, C=C))
         self.is_fitted=False
         self.best_thresholds=None
+        self.classes=classes
         
         pass
 
 
-    def fit(self,text,labels):
+    def fit(self,text,labels_bin):
         
         X=self.vectorizer.fit_transform(text)
-        y=self.mlb.fit_transform(labels)
+        y=labels_bin
         self.model.fit(X,y)
         self.is_fitted=True
 
@@ -71,13 +70,13 @@ class tf_idf():
 
         # Case 2: Using tuned macro or per class threshold
         y_pred=np.zeros_like(probas, dtype=int)
-        for c,tag in enumerate(self.mlb.classes_):
+        for c,tag in enumerate(self.classes):
             thr = threshold[tag]          # retrieve threshold for this tag
             y_pred[:, c] = (probas[:, c] >= thr).astype(int)
 
         return y_pred
     
-    def tune_threshold(self,dev_text,dev_labels,plot=False,depth=20):
+    def tune_threshold(self,dev_text,dev_labels_bin,plot=False,depth=20):
         '''
         Tune hyperparameter threshold in predict method to get best f1score
         
@@ -92,7 +91,7 @@ class tf_idf():
             raise ValueError("Model is not fitted.")
         
         # Get prediction for text
-        y_true=self.mlb.transform(dev_labels)
+        y_true=dev_labels_bin
         probas=self.predict_probas(dev_text)
 
         # Compare threshold performances
@@ -112,11 +111,11 @@ class tf_idf():
         best_thresh=thresholds[best_thresh_index]
         best_f1=f1_scores[best_thresh_index]
 
-        n_classes=len(self.mlb.classes_)
+        n_classes=len(self.classes)
         self.best_thresholds=np.full(n_classes, best_thresh)
         return best_thresh,best_f1
     
-    def tune_per_tag_threshold(self,dev_text,dev_labels,depth=20):
+    def tune_per_tag_threshold(self,dev_text,dev_labels_bin,depth=20):
         '''
         Due to sever imbalance in class representation, we might need to tune 
         the threshold per class to get best f1score.
@@ -131,13 +130,13 @@ class tf_idf():
         thresholds=np.linspace(0.05,0.50,depth) 
 
         # Get prediction for text
-        y_true=self.mlb.transform(dev_labels)
         probas=self.predict_probas(dev_text)
 
+        y_true=dev_labels_bin
         # Go through all class and compute best threshold
-        n_classes=y_true.shape[1]
+        n_classes=dev_labels_bin.shape[1]
         for c in range(n_classes):
-            tag = self.mlb.classes_[c] 
+            tag = self.classes[c] 
             y_true_c=y_true[:,c]
             probas_c = probas[:, c]
             best_class_f1=0
@@ -149,7 +148,7 @@ class tf_idf():
                 f1 = f1_score(y_true_c, y_pred_c, average="binary", zero_division=0)
                 
                 if f1 > best_class_f1:
-                    best_class_f1 = f1
+                    best_class_f1=f1
                     best_class_thresh = thresh
 
             

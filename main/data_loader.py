@@ -3,7 +3,6 @@ import json
 import zipfile
 
 
-
 def load_json_data(file_path):
     '''
     Docstring for load_json_data
