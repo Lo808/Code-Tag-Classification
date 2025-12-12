@@ -18,13 +18,14 @@ The prediction task is multi-label classification, as each exercise can belong t
 Project Structure
 
 Code-Tag-Classification/  
-    main/
+    src/
         __init__.py 
         data_loader.py   # data loader
         preprocessing_py # preprocessing the data for both model
         baseline.py      # inverse frequency model for baseline performances
         evaluation.py    # implement evaluation metrics
-        model            # 
+        model            # Bert fine tuned model
+        config           # Parameters
 
     
     data/                    
@@ -33,5 +34,6 @@ Code-Tag-Classification/
     models/
         Stock model coeffs
 
+    predict.cli.py # module to implement CLI 
 
     README.md

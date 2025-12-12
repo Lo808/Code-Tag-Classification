@@ -11,7 +11,7 @@ import numpy as np
 
 class Preprocessor():
     
-    def __init__(self,use_code=False,focus_only=False) -> None:
+    def __init__(self,use_code=False,focus_only=True) -> None:
         self.use_code=use_code
         self.mlb=MultiLabelBinarizer()
         self.label_order=None
@@ -101,17 +101,19 @@ class Preprocessor():
             
             self.check_split_balance(train_labels,dev_labels,test_labels)
 
-            train_labels_bin,test_labels_bin,dev_labels_bin=self.binarize_labels(train_labels,test_labels,dev_labels) # type: ignore
+            if binarize_labels:
+                train_labels,test_labels,dev_labels=self.binarize_labels(train_labels,test_labels,dev_labels) # type: ignore
 
-            return train_text, dev_text, test_text, train_labels_bin, dev_labels_bin, test_labels_bin
+            return train_text, dev_text, test_text, train_labels, dev_labels, test_labels
         
 
         if check_balance:
             self.check_split_balance(train_labels, None, test_labels)
-
-        train_labels_bin,test_labels_bin=self.binarize_labels(train_labels,test_labels,dev_labels=None) # type: ignore
+            
+        if binarize_labels:
+            train_labels,test_labels=self.binarize_labels(train_labels,test_labels,dev_labels=None) # type: ignore
         
-        return train_text, test_text, train_labels_bin, test_labels_bin
+        return train_text, test_text, train_labels, test_labels
     
     def binarize_labels(self,train_labels,test_labels,dev_labels=None):
 

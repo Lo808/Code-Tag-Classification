@@ -12,6 +12,7 @@ class CodeBERTPredictor():
         self.model_name=model_name
         self.device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.load_prediction_model()
         pass
 
     def load_prediction_model(self):
@@ -33,6 +34,7 @@ class CodeBERTPredictor():
         model.to(self.device)
         model.eval() 
         self.model=model
+        
 
 
     def predict_single_text(self,text):
@@ -56,7 +58,7 @@ class CodeBERTPredictor():
         # Prediction
         with torch.no_grad():
             # Get logits from model
-            logits = self.model(input_ids, mask)
+            logits=self.model(input_ids, mask)
             probs = torch.sigmoid(logits)
             
             # Apply best thresholds
