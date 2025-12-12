@@ -26,6 +26,7 @@ Code-Tag-Classification/
         evaluation.py    # implement evaluation metrics
         model            # Bert fine tuned model
         config           # Parameters
+        predict_cli.py   # module to implement CLI 
 
     
     data/                    
@@ -34,6 +35,6 @@ Code-Tag-Classification/
     models/
         Stock model coeffs
 
-    predict.cli.py # module to implement CLI 
+    
 
     README.md
